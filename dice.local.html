@@ -135,6 +135,7 @@
                         log("停止下注")
                         $("#spInfo").text("停止")
                     }
+                    await updateInfo(eos, account)
                 })
             } catch (e) {
                 log(e.message);
@@ -186,12 +187,14 @@
             let betNum = numberInput.value
             let recommend = recommendInput.value
 
+
             state = "running"
             log("开始下注，等待下注结果返回。。。")
             $("#spInfo").text("启动中")
             while (state == "running") {
                 await Promise.delay(1000).then(async function () {
                     await bet(eos, account, betNum, betAmount, hash, recommend, 2000)
+
                 })
             }
 
@@ -200,6 +203,28 @@
         function stop() {
             state = "idle"
             log("尝试停止下注，等待退出。。。")
+        }
+
+        async function updateInfo(eos, account) {
+            await updateAccount(eos, account)
+            await updateBalance(eos, account)
+        }
+
+        async function updateAccount(eos, account) {
+            let info = await eos.getAccount(account)
+            $("#spAccount").text(account)
+            cpu = info.cpu_limit.used / info.cpu_limit.max
+            net = info.net_limit.used / info.net_limit.max
+            $("#spCpu").text(cpu.toFixed(1) * 100 + "%")
+            $("#spNet").text(net.toFixed(1) * 100 + "%")
+            console.log(info)
+        }
+
+        async function updateBalance(eos, account) {
+            let balances = await eos.getCurrencyBalance("eosio.token", account, "EOS")
+            if (balances.length > 0) {
+                $("#spBalance").text(balances[0])
+            }
         }
 
     </script>
@@ -253,6 +278,20 @@
                 </form>
             </div>
             <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    <div class="col-sm-3 col-md-3">
+                        账户：<span id="spAccount"></span>
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+                        余额：<span id="spBalance"></span>
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+                        Cpu：<span id="spCpu"></span>
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+                        Net：<span id="spNet"></span>
+                    </div>
+                </div>
                 <textarea id="txtResults" class="form-control" style="height:605px;" readonly="readonly"></textarea>
             </div>
         </div>
