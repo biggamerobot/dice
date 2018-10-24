@@ -74,11 +74,6 @@
             txtResults.innerHTML = items.join('\n');
             txtResults.scrollTop = txtResults.scrollHeight;
         }
-        function printLog(message) {
-            log(message);
-        }
-
-
 
         //获取种子
         async function getSeed(account) {
@@ -95,14 +90,59 @@
             }, {
                     "headers": { 'Content-Type': 'application/json' }
                 })
-            // $.ajaxSetup({async:false});
-            // let result=$.post(bigGameHttpEndpoint+"/v1/dice/GetHouseSignedSeed");
-            // console.log(result.status,result.responseText)
         }
 
+        async function bet(eos, account, num, amount, hash, recommend, delay) {
+            try {
+                let seed = await getSeed(account)
+                console.log("seed", seed)
+                if (seed.data == null || seed.data.code > 0) {
+                    log("获取种子失败")
+                    return
+                }
+
+                let currentSeed = seed.data.curSeed
+                let memo = num + "-" + currentSeed.hash + "-" + hash + "-" + currentSeed.seedExpiredAt + "-" + recommend + "-" + currentSeed.sign
+                let bet = await eos.transaction({
+                    actions: [{
+                        account: 'eosio.token',  //合约账号
+                        name: 'transfer',
+                        authorization: [{ actor: account, permission: 'active' }],
+                        data: {
+                            from: account,
+                            to: gameContract,
+                            quantity: amount,
+                            memo: memo
+                        }
+                    }]
+                })
+
+                await Promise.delay(delay).then(async function () {
+                    let betresult = await getBetResult(bet.transaction_id)
+                    console.log("betresult", betresult)
+                    let result = betresult.data.result
+                    let winStatus = "获胜"
+                    if (result.winStatus == "house") {
+                        winStatus = "失败"
+                    }
+                    earn = ""
+                    if (result.earn > 0) {
+                        earn = "获得:" + result.earn
+                    }
+
+                    log(new Date().Format("yyyy-MM-dd hh:mm:ss") + " 下注：" + amount + " 小于:" + num + " 掷数:" + result.winNum + " " + winStatus + " " + earn)
+                    if (state == "idle") {
+                        log("停止下注")
+                        $("#spInfo").text("停止")
+                    }
+                })
+            } catch (e) {
+                log(e.message);
+            }
+        }
 
         var state = "idle"
-        function start() {
+        async function start() {
 
             if (state != "idle") {
                 alert("It's started already.")
@@ -115,17 +155,24 @@
             let numberInput = document.getElementById("dxOrderNumber")
             let customHashInput = document.getElementById("dxCustomHash")
             let httpEndpoint = document.getElementById("dxHttpEndpoint")
+            let recommendInput = document.getElementById("dxRecommend")
             if (httpEndpoint.value == "") {
                 httpEndpoint.value = eoshttpEndpoint
+            }
+
+            if (accountInput.value == "") {
+                log("下单用户名为空")
+                return
+            }
+            if (privateKeyInput.value == "") {
+                log("账户私钥为空")
+                return
             }
 
             if (customHashInput.value == "") {
                 customHashInput.value = randomString(20)
             }
             log("当前hash：" + customHashInput.value)
-
-            // accountInput.disabled = true
-            // privateKeyInput.disabled = true
 
             let eos = Eos({
                 chainId: chainId,
@@ -137,73 +184,23 @@
             let betAmount = parseFloat(amountInput.value).toFixed(4) + " EOS"
             let hash = customHashInput.value
             let betNum = numberInput.value
+            let recommend = recommendInput.value
 
             state = "running"
-            printLog("开始下注")
-
-            var betInverval = setInterval(async function () {
-                if (state != "running") {
-                    log("结束下注")
-                    clearInterval(betInverval)
-                    return
-                }
-
-                try {
-                    let seed = await getSeed(account)
-                    console.log(seed)
-                    if (seed.data == null || seed.data.code > 0) {
-                        log("获取种子失败")
-                        return
-                    }
-
-                    let currentSeed = seed.data.curSeed
-                    let code = ""
-                    let memo = betNum + "-" + currentSeed.hash + "-" + hash + "-" + currentSeed.seedExpiredAt + "-" + code + "-" + currentSeed.sign
-
-                    let bet = await eos.transaction({
-                        actions: [{
-                            account: 'eosio.token',  //合约账号
-                            name: 'transfer',
-                            authorization: [{ actor: account, permission: 'active' }],
-                            data: {
-                                from: account,
-                                to: gameContract,
-                                quantity: betAmount,
-                                memo: memo
-                            }
-                        }]
-                    })
-                    let tx_id = bet.transaction_id
-                    setTimeout(async function () {
-                        let betresult = await getBetResult(tx_id)
-                        console.log("betresult", betresult)
-                        let result = betresult.data.result
-                        let winStatus = "获胜"
-                        if (result.winStatus == "house") {
-                            winStatus = "失败"
-                        }
-                        earn = ""
-                        if (result.earn > 0) {
-                            earn = "获得:" + result.earn
-                        }
-
-                        log(new Date().Format("yyyy-MM-dd hh:mm:ss") + " 下注：" + betAmount + " 号码:" + betNum + " 结果:" + result.winNum + " " + winStatus + " " + earn)
-
-                    }, 2000)
-
-                } catch (e) {
-                    log(e.message);
-                }
-            }, 5000)
+            log("开始下注，等待下注结果返回。。。")
+            $("#spInfo").text("启动中")
+            while (state == "running") {
+                await Promise.delay(1000).then(async function () {
+                    await bet(eos, account, betNum, betAmount, hash, recommend, 2000)
+                })
+            }
 
         }
 
         function stop() {
             state = "idle"
+            log("尝试停止下注，等待退出。。。")
         }
-
-
-
 
     </script>
 </head>
@@ -225,7 +222,8 @@
                     </div>
                     <div class="form-group">
                         <label for="dxCustomHash">自定义哈希(长度20）</label>
-                        <input type="text" class="form-control" id="dxCustomHash" size="20" placeholder="为空将自动生成" value="">
+                        <input type="text" class="form-control" id="dxCustomHash" maxlength="20" size="20" placeholder="为空将自动生成"
+                            value="">
                     </div>
                     <div class="form-group">
                         <label for="dxPrivateKey">私钥</label>
@@ -237,21 +235,25 @@
                             min="0.1" value="0.1">
                     </div>
                     <div class="form-group">
-                        <label for="dxOrderNumber">下单号码</label>
-                        <input type="text" class="form-control" id="dxOrderNumber" placeholder="输入下单号码" step="1" min="2"
-                            max="96" value="49">
+                        <label for="dxOrderNumber">下单号码（大于0，小于96）</label>
+                        <input type="text" class="form-control" id="dxOrderNumber" maxlength="2" placeholder="输入下单号码"
+                            step="1" min="2" max="96" value="49">
+                    </div>
+                    <div class="form-group">
+                        <label for="dxRecommend">推荐人</label>
+                        <input type="text" class="form-control" id="dxRecommend" placeholder="输入推荐人" value="">
                     </div>
                     <div class="form-group">
                         <button type="button" class="btn btn-info btn-sm" id="btnStart" onclick="javascript:start();">开始
                         </button>
                         <button type="button" class="btn btn-info btn-sm" id="btnStop" onclick="javascript:stop();">结束
                         </button>
+                        <span class="col-md-2 text-mute" id="spInfo">停止</span>
                     </div>
                 </form>
             </div>
             <div class="col-sm-12 col-md-6">
                 <textarea id="txtResults" class="form-control" style="height:605px;" readonly="readonly"></textarea>
-                <!-- <div id="log"></div> -->
             </div>
         </div>
     </div>
