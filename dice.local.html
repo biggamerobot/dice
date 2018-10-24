@@ -1,0 +1,260 @@
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.9/lib/eos.min.js" integrity="" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.staticfile.org/babel-polyfill/6.16.0/polyfill.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script>
+
+
+        chainId = 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906';  //主网ID
+        eoshttpEndpoint = "https://nodes.get-scatter.com"
+        bigGameHttpEndpoint = "http://lotto-api.big.game"
+        gameContract = "eosbiggame44"
+
+        if (window.location.hash == "#test") {
+            chainId = 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f';  //主网ID
+            eoshttpEndpoint = "http://192.168.1.211:8887"
+            bigGameHttpEndpoint = "http://192.168.1.207:8022"
+            gameContract = "dice11"
+        }
+
+        $(document).ready(function () {
+            $("#dxHttpEndpoint").val(eoshttpEndpoint)
+        })
+
+        httpDefaultInstance = axios.create({
+            baseURL: bigGameHttpEndpoint,
+        });
+
+        //生成随机数
+        function randomString(t) {
+            for (var n = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', e = '', o = 0; o < t; o++)
+                e += n.charAt(Math.floor(Math.random() * n.length));
+            return e
+        }
+
+        Date.prototype.Format = function (fmt) {
+            var o = {
+                "M+": this.getMonth() + 1,                 //月份   
+                "d+": this.getDate(),                    //日   
+                "h+": this.getHours(),                   //小时   
+                "m+": this.getMinutes(),                 //分   
+                "s+": this.getSeconds(),                 //秒   
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度   
+                "S": this.getMilliseconds()             //毫秒   
+            };
+            if (/(y+)/.test(fmt))
+                fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt))
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+
+
+        Promise.delay = function (ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function log(msg) {
+            var txtResults = document.getElementById('txtResults');
+            var html = txtResults.innerHTML;
+            var items = html == '' ? [] : html.split('\n');
+            var overflow = items.length - 100;
+            if (overflow > 0) {
+                items.splice(0, overflow);
+            }
+            items.push(msg);
+            txtResults.innerHTML = items.join('\n');
+            txtResults.scrollTop = txtResults.scrollHeight;
+        }
+        function printLog(message) {
+            log(message);
+        }
+
+
+
+        //获取种子
+        async function getSeed(account) {
+            return httpDefaultInstance.post("/v1/dice/GetHouseSignedSeed", {
+                "accountName": account
+            }, {
+                    "headers": { 'Content-Type': 'application/json' }
+                })
+        }
+        //获取下注结果
+        async function getBetResult(txid) {
+            return httpDefaultInstance.post("/v1/dice/GetDiceResult", {
+                "txId": txid
+            }, {
+                    "headers": { 'Content-Type': 'application/json' }
+                })
+            // $.ajaxSetup({async:false});
+            // let result=$.post(bigGameHttpEndpoint+"/v1/dice/GetHouseSignedSeed");
+            // console.log(result.status,result.responseText)
+        }
+
+
+        var state = "idle"
+        function start() {
+
+            if (state != "idle") {
+                alert("It's started already.")
+                return
+            }
+
+            let accountInput = document.getElementById("dxAccountName")
+            let privateKeyInput = document.getElementById("dxPrivateKey")
+            let amountInput = document.getElementById("dxOrderAmount")
+            let numberInput = document.getElementById("dxOrderNumber")
+            let customHashInput = document.getElementById("dxCustomHash")
+            let httpEndpoint = document.getElementById("dxHttpEndpoint")
+            if (httpEndpoint.value == "") {
+                httpEndpoint.value = eoshttpEndpoint
+            }
+
+            if (customHashInput.value == "") {
+                customHashInput.value = randomString(20)
+            }
+            log("当前hash：" + customHashInput.value)
+
+            // accountInput.disabled = true
+            // privateKeyInput.disabled = true
+
+            let eos = Eos({
+                chainId: chainId,
+                keyProvider: privateKeyInput.value,
+                httpEndpoint: httpEndpoint.value
+            })
+
+            let account = accountInput.value
+            let betAmount = parseFloat(amountInput.value).toFixed(4) + " EOS"
+            let hash = customHashInput.value
+            let betNum = numberInput.value
+
+            state = "running"
+            printLog("开始下注")
+
+            var betInverval = setInterval(async function () {
+                if (state != "running") {
+                    log("结束下注")
+                    clearInterval(betInverval)
+                    return
+                }
+
+                try {
+                    let seed = await getSeed(account)
+                    console.log(seed)
+                    if (seed.data == null || seed.data.code > 0) {
+                        log("获取种子失败")
+                        return
+                    }
+
+                    let currentSeed = seed.data.curSeed
+                    let code = ""
+                    let memo = betNum + "-" + currentSeed.hash + "-" + hash + "-" + currentSeed.seedExpiredAt + "-" + code + "-" + currentSeed.sign
+
+                    let bet = await eos.transaction({
+                        actions: [{
+                            account: 'eosio.token',  //合约账号
+                            name: 'transfer',
+                            authorization: [{ actor: account, permission: 'active' }],
+                            data: {
+                                from: account,
+                                to: gameContract,
+                                quantity: betAmount,
+                                memo: memo
+                            }
+                        }]
+                    })
+                    let tx_id = bet.transaction_id
+                    setTimeout(async function () {
+                        let betresult = await getBetResult(tx_id)
+                        console.log("betresult", betresult)
+                        let result = betresult.data.result
+                        let winStatus = "获胜"
+                        if (result.winStatus == "house") {
+                            winStatus = "失败"
+                        }
+                        earn = ""
+                        if (result.earn > 0) {
+                            earn = "获得:" + result.earn
+                        }
+
+                        log(new Date().Format("yyyy-MM-dd hh:mm:ss") + " 下注：" + betAmount + " 号码:" + betNum + " 结果:" + result.winNum + " " + winStatus + " " + earn)
+
+                    }, 2000)
+
+                } catch (e) {
+                    log(e.message);
+                }
+            }, 5000)
+
+        }
+
+        function stop() {
+            state = "idle"
+        }
+
+
+
+
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid" style="padding-top: 5px;">
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <form>
+                    <div class="form-group">
+                        <label for="txtHttpEndpoint">主网地址</label>
+                        <input type="text" class="form-control" id="dxHttpEndpoint" size="12" placeholder="输入主网地址"
+                            value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="dxAccountName">下单账户名</label>
+                        <input type="text" class="form-control" id="dxAccountName" size="12" placeholder="输入下单账户名"
+                            value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="dxCustomHash">自定义哈希(长度20）</label>
+                        <input type="text" class="form-control" id="dxCustomHash" size="20" placeholder="为空将自动生成" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="dxPrivateKey">私钥</label>
+                        <input type="text" class="form-control" id="dxPrivateKey" size="51" placeholder="输入账户私钥" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="dxOrderAmount">下单金额</label>
+                        <input type="text" class="form-control" id="dxOrderAmount" placeholder="输入下单金额" step="0.0001"
+                            min="0.1" value="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="dxOrderNumber">下单号码</label>
+                        <input type="text" class="form-control" id="dxOrderNumber" placeholder="输入下单号码" step="1" min="2"
+                            max="96" value="49">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-info btn-sm" id="btnStart" onclick="javascript:start();">开始
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" id="btnStop" onclick="javascript:stop();">结束
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <textarea id="txtResults" class="form-control" style="height:605px;" readonly="readonly"></textarea>
+                <!-- <div id="log"></div> -->
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
