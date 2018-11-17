@@ -21,7 +21,8 @@ a robot for the dice game of big.game
 使用通用的哈希函数sha1对用户的种子进行运算，可以得到用户种子（user_seed_hash)。
 
 ## 第二步：	查询开奖记录
-在www.eosflare.com自己账号的记录中找到类型为“eosbiggame44 - receipt”并且信息中的seed_hash和user_seed_hash与第一步的memo中找到的一致的记录，即为开奖记录
+在www.eosflare.com自己账号的记录中找到类型为“eosbiggame44 - receipt”并且信息中的seed_hash和user_seed_hash与第一步的memo中找到的一致的记录，即为开奖记录,如下图所示：
+![开奖记录](https://github.com/biggamerobot/dice/blob/master/receipt.png)
 
 ## 第三步：	验证开奖记录的服务器种子
 在开奖记录中我们可以获取到服务器种子（seed），使用通用的哈希函数sha256对seed进行运算，如果结果为下注记录memo中的seed_hash，那么这个服务器种子seed是可信的。
