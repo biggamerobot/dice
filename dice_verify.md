@@ -21,7 +21,7 @@ memo信息是一个以”-“字符将信息连接起来的字符串,类似“81
 
 ## 第二步：	查询开奖记录
 在www.eosflare.com自己账号的记录中找到类型为“eosbiggame44 - receipt”的交易记录，找到信息中的house_seed_hash和player_seed_hash与第一步的memo中找到的一致的记录，即为开奖记录,如下图所示：
-![开奖记录](https://github.com/biggamerobot/dice/blob/master/receipt.png)
+![开奖记录](https://github.com/biggamerobot/dice/blob/master/dice_receipt.png)
 
 （注意：在老的交易记录中，receipt中的seed和seed_hash对应为house_seed和house_seed_hash, user_seed_hash为player_seed_hash)
 
