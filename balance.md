@@ -22,4 +22,4 @@
 ## 第五步：	计算开奖结果
 分别将服务器种子和用户种子哈希从字符串转换为16进制的数值数组，进行以下运算即可得到开奖结果：
 		
-        result = uint64(seed[0]) +uint64(user_seed_hash[1]) + uint64(seed[2]) + uint64(user_seed_hash[3]) + uint64(seed[4]) + uint64(user_seed_hash[5]) + uint64(seed[6]) + uint64(user_seed_hash[7]))
+        result = (uint64(seed[0]) +uint64(user_seed_hash[1]) + uint64(seed[2]) + uint64(user_seed_hash[3]) + uint64(seed[4]) + uint64(user_seed_hash[5]) + uint64(seed[6]) + uint64(user_seed_hash[7])) % 100
