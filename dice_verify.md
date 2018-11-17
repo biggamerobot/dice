@@ -2,13 +2,14 @@
 
 验证工具网页请访问：https://big.game/balance
 
-在使用此网页工具之前，请仔细阅读以下说明。
+在使用此网页工具之前，请仔细阅读以下说明。你可以按照如下步骤，自行开发程序验证。
 
 ## 第一步：	解析下注记录的memo
 
 在区块链浏览器（如eosflare）查询您下注的转账记录，查看其memo信息。
 
 memo信息是一个以”-“字符将信息连接起来的字符串,类似“81-44287e8f0d21...qySS36H5d-1542455142-knightplay11-SIG_K1_JuR6XiFuWCc...VY”:
+![memo](https://github.com/biggamerobot/dice/blob/master/bet_memo.png)
 
 其结构如下：
 * 第一个信息是下注的数字
