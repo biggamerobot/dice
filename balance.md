@@ -23,7 +23,7 @@ memo信息是一个以”-“字符将信息连接起来的字符串,类似“81
 （注意：在老的交易记录中，receipt中的seed和seed_hash对应为house_seed和house_seed_hash, user_seed_hash为player_seed_hash)
 
 ## 第三步：	验证开奖记录的服务器种子
-在开奖记录中我们可以获取到服务器种子（house_seed），使用通用的哈希函数sha256对house_seed进行运算，如果结果为下注记录memo中的house_seed_hash，那么这个house_seed是可信的。
+在开奖receipt中我们可以获取到服务器种子（house_seed），使用通用的哈希函数sha256对house_seed进行运算，如果结果为下注记录memo中的house_seed_hash，那么这个house_seed是可信的。
 ## 第四步： 验证签名
 验证签名使用biggame的公钥（EOS8aBhWoUfbLPAMwccqd2pRxjd1SVB3vuaEfGyjGtBjySr2oCZPM），对house_seed_hash和memo中的（house_seed_sign）进行ecc签名验证，验证结果通过即可证明服务器种子未被篡改。
 ## 第五步：	计算开奖结果
