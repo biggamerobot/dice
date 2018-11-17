@@ -18,7 +18,7 @@
 ## 第三步：	验证开奖记录的服务器种子
 在开奖记录中我们可以获取到服务器种子（seed），使用通用的哈希函数sha256对seed进行运算，如果结果为下注记录memo中的seed_hash，那么这个服务器种子seed是可信的。
 ## 第四步： 验证签名
-验证签名使用biggame的公钥（EOS8aBhWoUfbLPAMwccqd2pRxjd1SVB3vuaEfGyjGtBjySr2oCZPM），对服务器的种子哈希（seed_hash）和memo中的（seed_sign进行ecc签名验证，验证结果通过即可证明服务器种子未被篡改。
+验证签名使用biggame的公钥（EOS8aBhWoUfbLPAMwccqd2pRxjd1SVB3vuaEfGyjGtBjySr2oCZPM），对服务器的种子哈希（seed_hash）和memo中的（seed_sign）进行ecc签名验证，验证结果通过即可证明服务器种子未被篡改。
 ## 第五步：	计算开奖结果
 分别将服务器种子和用户种子哈希从字符串转换为16进制的数值数组，进行以下运算即可得到开奖结果：
 		
