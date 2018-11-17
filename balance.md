@@ -9,12 +9,12 @@
 memo信息是一个以”-“字符将信息连接起来的字符串,类似“81-44287e8f0d21ced6286c2c9322a1e62d229e06fb5eaf7a5eb0c780395a90702f-FBcMPpBf9VBqySS36H5d-1542455142--SIG_K1_JuR6XiFuWCckrjJedsPemiUdJtGyzGHmXByMdBWyMuLqwstpJztJ1QKAuij3o7CAhyZq1eXkg1cbCDY46mX2j4kA2zLxVY”:
 
 其结构如下：
-    第一个信息是下注的数字，
-    第二个是服务器的种子哈希（house_seed_hash），用户在下注前，就可以点击右上角的“玩法与公平”看到本局的house_seed_hash
-    第三个是用户的种子（player_seed）,用户在下注前，就可以点击右上角的“玩法与公平”看到本局的玩家种子，使用通用的哈希函数sha1对用户的种子进行运算，可以得到用户种子（player_seed_hash)。
-    第四个是服务器种子的有效时间戳，
-    第五个是下注推荐人（这部分有可能没有）
-    第六个是服务器的种子签名（House Signature），也可在下注前，点击右上角的“玩法与公平”看到此信息。
+* 第一个信息是下注的数字，
+* 第二个是服务器的种子哈希（house_seed_hash），用户在下注前，就可以点击右上角的“玩法与公平”看到本局的house_seed_hash
+* 第三个是用户的种子（player_seed）,用户在下注前，就可以点击右上角的“玩法与公平”看到本局的玩家种子，使用通用的哈希函数sha1对用户的种子进行运算，可以得到用户种子（player_seed_hash)。
+* 第四个是服务器种子的有效时间戳，
+* 第五个是下注推荐人（这部分有可能没有）
+* 第六个是服务器的种子签名（House Signature），也可在下注前，点击右上角的“玩法与公平”看到此信息。
 
 
 ## 第二步：	查询开奖记录
