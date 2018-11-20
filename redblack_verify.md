@@ -5,7 +5,7 @@
 在使用此网页工具之前，请仔细阅读以下说明。您可以按照如下步骤，自行开发程序验证。
 
 ## 一、解析下注记录的memo
-在区块链浏览器（如eosflare：https://eosflare.io/）查询您下注的转账记录，查看其memo信息。
+在区块链浏览器（如eosflare：https://eosflare.io/ ）查询您下注的转账记录，查看其memo信息。
 
 memo信息是一个以”-“字符将信息连接起来的字符串,类似“14898-0-1-5000-2-0-3-0-SIG_K1_KYPJsoFXphgCEkkg7G5P7cg4LAfxzZZq3hE3RHaZnoqbLosXH1gfUUzmwE9uW2u7zpx9xzyJyACbCRtxSwVmTx5eKGpdz4”: 
 
