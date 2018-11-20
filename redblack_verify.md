@@ -9,8 +9,6 @@
 
 memo信息是一个以”-“字符将信息连接起来的字符串,类似“14898-0-1-5000-2-0-3-0-SIG_K1_KYPJsoFXphgCEkkg7G5P7cg4LAfxzZZq3hE3RHaZnoqbLosXH1gfUUzmwE9uW2u7zpx9xzyJyACbCRtxSwVmTx5eKGpdz4”: 
 
-此处插入玩家转账信息截图。
-
 其结构如下：
 游戏ID-推荐人账号-1-黑方投注金额-2-红方投注金额-3-幸运一击投注金额-本局种子签名
 
