@@ -25,7 +25,7 @@ memo信息是一个以”-“字符将信息连接起来的字符串,类似“14
 ## 二、查询开奖记录
 在www.eosflare.com自己账号的记录中找到类型为“eosbiggame55 - reveal”的交易记录，只要“game_id”与自己投注记录memo中的第一个信息相同，即为对应的开奖记录，如下图所示： 
 
-此处插入eosbiggame55 - reveal截图。
+![eosbiggame55 - reveal截图](https://github.com/biggamerobot/dice/blob/master/redblack_reveal.png) 
 
 ## 三、验证签名
 验证签名需要使用biggame的公钥“public_key”对memo中的种子签名“seed_sign”进行ecc签名验证，验证结果通过即可证明服务器种子未被篡改。
