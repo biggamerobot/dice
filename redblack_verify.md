@@ -32,7 +32,7 @@ memo信息是以”-“字符将信息连接起来的字符串,类似“16728-0-
 ## 二、查询开奖记录
 在 https://eosflare.io/ 自己账号的记录中找到类型为“eosbiggame55 - reveal”的交易记录，只要“game_id”与自己投注记录memo中的第一个信息相同，即为对应的开奖记录，如下图所示： 
 
-![eosbiggame55 - reveal截图](https://github.com/biggamerobot/dice/blob/master/red_reveal_memo.png) 
+![eosbiggame55 - reveal截图](https://github.com/biggamerobot/dice/blob/master/%E7%BA%A2%E9%BB%91%20%E5%BC%80%E5%A5%96%E9%80%9A%E7%9F%A5.png) 
 
 ## 三、验证签名
 
